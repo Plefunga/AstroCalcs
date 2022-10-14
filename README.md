@@ -15,4 +15,7 @@ Current functions:
 - radec(altitude, azimuth, latitude, local sidereal time): calculates the right ascention and declination.
 
 
-TODO: better decscriptions of functions, and combine some of the functions and simplify them as much as possible. Also need to make an actual arduino library, which is kind of imporant considering that it is the main feature of this repo.
+TODO: 
+- better decscriptions of functions, and combine some of the functions and simplify them as much as possible. 
+- Make an actual arduino library, which is kind of imporant considering that it is the main feature of this repo.
+- Aberration and Nuation calculations.
