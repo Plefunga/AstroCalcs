@@ -1,6 +1,6 @@
 # AstroCalcs
-A (to be) Arduino library of astronomy calculations
-Currently only a python script as I figure it out. Some of them have been converted to C++ for arduino, but not all of them.
+An Arduino library of astronomy calculations that is still in development, and hence contains many bugs.
+There is a python version of this which is used for testing. It also has a bug in it where it refracts the right ascention around 180 degrees every now and then.
 
 Current functions:
 - jdify(year, month, day, hour, minute, second): convert date into julian date
@@ -13,9 +13,12 @@ Current functions:
 - precess(right ascention, declination, year, right ascention seconds, declination seconds): does a rough conversion between J2000 coordinates to on-date coordinates.
 - refract(altitude): adjusts an altitude to refract
 - radec(altitude, azimuth, latitude, local sidereal time): calculates the right ascention and declination.
+- getHA(): returns Hour Angle.
+- setRADEC(ra, dec): sets RA/DEC.
+- getDec(): gets declination.
 
 
 TODO: 
 - better decscriptions of functions, and combine some of the functions and simplify them as much as possible. 
-- Make an actual arduino library, which is kind of imporant considering that it is the main feature of this repo.
+- debug the library.
 - Aberration and Nuation calculations.
