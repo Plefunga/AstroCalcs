@@ -1,5 +1,22 @@
+/*
+    Copyright (C) 2023 Nathan Carter
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    To read the full terms and conditions, see https://www.gnu.org/licenses/.
+*/
+
 #ifndef AstroCalcs_h
-#define AstroCalcs_h
+
+#define AstroCalcs_h 1
 #include "Arduino.h"
 class AstroCalcs{
     public:
@@ -8,6 +25,8 @@ class AstroCalcs{
         void calcPosJ2000(double ra, double dec);
         void radecify(int rah, int ram, double ras, int decd, int decm, double decs);
         double getLST();
+        String timeVars();
+        void updateTimeManual(String s);
         double _ra;
         double _dec;
         int _rah;
@@ -25,6 +44,8 @@ class AstroCalcs{
         double getHA();
         void refract();
         double getDec();
+        void setAltAz(double alt, double az);
+        double getRA();
 
     private:
         void jdify();

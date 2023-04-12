@@ -16,3 +16,7 @@ getLST  KEYWORD2
 setRADEC    KEYWORD2
 getHA   KEYWORD2
 getDec  KEYWORD2
+setAltAz    KEYWORD2
+getRA   KEYWORD2
+updateTimeManual    KEYWORD2
+timeVars    KEYWORD2
