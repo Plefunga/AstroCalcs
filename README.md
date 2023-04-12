@@ -1,6 +1,5 @@
 # AstroCalcs
-An Arduino library of astronomy calculations that is still in development, and hence contains many bugs.
-There is a python version of this which is used for testing. It also has a bug in it where it refracts the right ascention around 180 degrees every now and then.
+An Arduino library of astronomy calculations that is mostly finished.
 
 Current functions:
 - jdify(year, month, day, hour, minute, second): convert date into julian date
@@ -19,6 +18,6 @@ Current functions:
 
 
 TODO: 
-- better decscriptions of functions, and combine some of the functions and simplify them as much as possible. 
-- debug the library.
+- better decscriptions of functions, and combine some of the functions and simplify them as much as possible.
+- Extensively test the library
 - Aberration and Nuation calculations.
