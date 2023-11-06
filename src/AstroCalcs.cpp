@@ -17,6 +17,101 @@
 #include "Arduino.h"
 #include "AstroCalcs.h"
 
+/**
+ * Constructor for the position class
+ * @param right_ascention the right ascention
+ * @param declination the declination
+ * @param offset the offset from these coordinates (only used occasionally)
+ * @param latitude the latitude which these positions apply
+ * @param LST the local sidereal time
+ * TODO: work in radians
+*/
+Position::Position(double right_ascention, double declination, int offset, double latitude, double LST)
+{
+    this->ra = right_ascention;
+    this->dec = declination;
+
+    this->ra = limit(this->ra);
+
+    LST = limit(LST + SECONDS_TO_LST(offset));
+
+    this->ha = limit(LST - this->ra);
+
+    double h = radians(this->ha);
+	double d = radians(this->dec);
+	double l = radians(latitude);
+	double azimuth = atan2(sin(h), cos(h) * sin(l) - tan(d) * cos(l));
+	double altitude = asin(sin(l) * sin(d) + cos(h) * cos(d) * cos(l));
+	this->az = limit(-degrees(azimuth));
+	this->alt = -degrees(altitude);
+
+    double hours = (this->ra / 360) * 24;
+	this->rah = floor((this->ra / 360) * 24);
+	double minutes = (hours - this->rah) * 60;
+	this->ram = floor(minutes);
+	this->ras = (minutes - this->ram) * 60;
+
+    if(this->dec >=0.0){
+        this->decd = floor(this->dec);
+        minutes = (this->dec - this->decd) * 60;
+        this->decm = floor(minutes);
+        this->decs = (minutes - this->decm) * 60;
+    }
+    else{
+        this->decd = ceil(this->dec);
+        minutes = (this->dec - this->decd) * 60;
+        this->decm = ceil(minutes);
+        this->decs = (minutes - this->decm) * 60;
+    }
+
+    this->azd = floor(this->az);
+    minutes = (this->az - this->azd) * 60;
+    this->azm = floor(minutes);
+    this->azs = (minutes - this->azm) * 60;
+
+    if(this->alt >=0.0){
+        this->altd = floor(this->alt);
+        minutes = (this->alt - this->altd) * 60;
+        this->altm = floor(minutes);
+        this->alts = (minutes - this->altm) * 60;
+    }
+    else{
+        this->altd = ceil(this->alt);
+        minutes = (this->alt - this->altd) * 60;
+        this->altm = ceil(minutes);
+        this->alts = (minutes - this->altm) * 60;
+    }
+    
+}
+
+/**
+ * Position::limit
+ * @param x the coordinate
+ * @return x, but between 0 and 360 degrees
+*/
+double Position::limit(double x)
+{
+    int diff = floor(x/360);
+
+    for(int i = 0; i < diff; i++)
+    {
+        x -= 360.0;
+    }
+
+    diff = ceil(-x/360);
+
+    for(int i = 0; i < diff; i++)
+    {
+        x += 360.0;
+    }
+    return x;
+}
+
+/**
+ * Astrocalcs constructor
+ * @param longitude the longitude of the telescope
+ * @param latitude the latitude of the telescope
+*/
 AstroCalcs::AstroCalcs(double longitude, double latitude){
     _latitude = latitude;
     _longitude = longitude;
@@ -95,7 +190,8 @@ void AstroCalcs::hmsify(){
     dmsify
     converts decimal declination into degrees/minutes/seconds
 */
-void AstroCalcs::dmsify(){
+void AstroCalcs::dmsify()
+{
     if(_dec >=0.0){
         _decd = floor(_dec);
         double m = (_dec - _decd) * 60;
@@ -115,7 +211,8 @@ void AstroCalcs::dmsify(){
     altaz
     converts ra/dec into alt/az
 */
-void AstroCalcs::altaz(){
+void AstroCalcs::altaz()
+{
     double h = radians(_ha);
 	double d = radians(_dec);
 	double l = radians(_latitude);
@@ -128,14 +225,23 @@ void AstroCalcs::altaz(){
 	_alt = degrees(altitude);
 }
 
-/*
-    precess
-    corrects a J2000 ra/dec for precession
+/**
+ * AstroCalcs::precess
+ * See https://bbastrodesigns.com/lib/coordLib.js line 636
+ * Corrects the J2000 coordinate for precession
+ * TODO: work in radians
 */
-void AstroCalcs::precess(){
+void AstroCalcs::precess()
+{
+    // make sure the variables are updated
     dmsify();
     hmsify();
+
+    // get the years since 2000
+    // TODO: catch errors where year <= 2000
     int t = _Y - 2000;
+
+    // 
 	double m = (3.0749 + 0.0000186 * t) * t;
 	double n = (20.043 - 0.000085 * t) * t;
 	double ns = (1.3362 - 0.0000056 * t) * t;
@@ -182,15 +288,15 @@ void AstroCalcs::radec(){
 
 //public functions
 
-/*
-    updateTime
-    :: int Y :: the year
-    :: int M :: the month
-    :: int D :: the day
-    :: int h :: the hour
-    :: int m :: the minute
-    :: int s :: the seconds
-    updates the time related variables
+/**
+ * AstroCalcs::updateTime
+ * updates the time in the library (also updating LST)
+ * @param Y year
+ * @param M month
+ * @param D day 
+ * @param h hour
+ * @param m minute
+ * @param s second
 */
 void AstroCalcs::updateTime(int Y, int M, int D, int h, int m, int s){
     if (M <= 2){
@@ -320,7 +426,7 @@ void AstroCalcs::setRADEC(double ra, double dec){
     returns the hour angle of the current target
 */
 double AstroCalcs::getHA(){
-    _ha = _LST - _ra;
+    _ha = limit(_LST - _ra);
     return _ha;
 }
 
@@ -353,8 +459,110 @@ void AstroCalcs::setAltAz(double alt, double az){
     returns the current right ascention, between 0 and 360 degrees
 */
 double AstroCalcs::getRA(){
-    if(_ra < 0){
-        _ra = _ra + 360;
-    }
+    _ra = limit(_ra);
     return _ra;
+}
+
+
+/*
+    calcRA
+    :: double altitude :: the altitude of a celestial object
+    :: double azimuth  :: the azimuth of a celestial object
+    returns the right ascention of the celestial object
+*/
+double AstroCalcs::calcRA(double altitude, double azimuth)
+{
+    azimuth = PI + azimuth;
+    if(azimuth > 2*PI){
+        azimuth = azimuth - 2*PI;
+    }
+	double l = radians(_latitude);
+	double t = radians(_LST);
+	double d = asin(sin(altitude) * sin(l) + cos(altitude) * cos(azimuth) * cos(l));
+	double h = asin(sin(azimuth) * cos(altitude) / cos(d));
+	//d = degrees(d);
+	double r = limit(degrees(t - (PI*2 - h)));
+    return r;
+}
+
+/*
+    calcDec
+    :: double altitude :: the altitude of a celestial object
+    :: double azimuth  :: the azimuth of a celestial object
+    returns the declination of the celestial object
+*/
+double AstroCalcs::calcDec(double altitude, double azimuth)
+{
+    azimuth = PI + azimuth;
+    if(azimuth > 2*PI){
+        azimuth = azimuth - 2*PI;
+    }
+	double l = radians(_latitude);
+	//double t = radians(_LST);
+	double d = asin(sin(altitude) * sin(l) + cos(altitude) * cos(azimuth) * cos(l));
+	//double h = asin(sin(azimuth) * cos(altitude) / cos(d));
+	d = degrees(d);
+	/*double r = degrees(t - (PI*2 - h));
+    if(r < 0.0){
+        r = r + 360.0;
+    }*/
+    return d;
+}
+
+/*
+    calcAlt
+    :: double right_ascention :: the right ascention of a celestial object
+    :: double declination     :: the declination of a celestial object
+    returns the altitude of the celestial object above the horizon
+*/
+double AstroCalcs::calcAlt(double right_ascention, double declination)
+{
+    double h = radians(_LST - right_ascention);
+	double d = radians(declination);
+	double l = radians(_latitude);
+	double altitude = asin(sin(l) * sin(d) + cos(h) * cos(d) * cos(l));
+	_alt = degrees(altitude);
+    return altitude;
+}
+
+/*
+    calcAz
+    :: double right_ascention :: the right ascention of a celestial object
+    :: double declination     :: the declination of a celestial object
+    returns the azimuth of the celestial object
+*/
+double AstroCalcs::calcAz(double right_ascention, double declination)
+{
+    double h = radians(_LST - right_ascention);
+	double d = radians(declination);
+	double l = radians(_latitude);
+	double azimuth = atan2(sin(h), cos(h) * sin(l) - tan(d) * cos(l));
+	_az = degrees(azimuth);
+    if(_az < 0.0){
+        _az = _az + 360.0;
+    }
+    return azimuth;
+}
+
+Position AstroCalcs::getPosition(int offset)
+{
+    return Position(_ra, _dec, offset, _latitude, _LST);
+}
+
+double AstroCalcs::limit(double x)
+{
+    int diff = floor(x/360);
+
+    for(int i = 0; i < diff; i++)
+    {
+        x -= 360.0;
+    }
+
+    diff = ceil(-x/360);
+
+    for(int i = 0; i < diff; i++)
+    {
+        x += 360.0;
+    }
+    return x;
 }
