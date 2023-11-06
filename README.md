@@ -16,7 +16,7 @@ Current functions:
 - getDec(): gets declination.
 
 
-#TODO: 
+# TODO: 
 - better decscriptions of functions, and combine some of the functions and simplify them as much as possible.
 - Extensively test the library
 - Aberration and Nuation calculations.
