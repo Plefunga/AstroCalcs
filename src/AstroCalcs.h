@@ -14,10 +14,42 @@
     To read the full terms and conditions, see https://www.gnu.org/licenses/.
 */
 
-#ifndef AstroCalcs_h
+#ifndef ASTROCALCS_H
 
-#define AstroCalcs_h 1
+#define ASTROCALCS_H 1
 #include "Arduino.h"
+
+#define SECONDS_TO_LST(x) ((x)*0.00423611)
+
+class Position{
+    public:
+        Position(double r, double d, int offset, double latitude, double LST);
+
+        double ha;
+
+        double ra;
+        int rah;
+        int ram;
+        double ras;
+
+        double dec;
+        int decd;
+        int decm;
+        int decs;
+
+        double alt;
+        int altd;
+        int altm;
+        double alts;
+
+        double az;
+        int azd;
+        int azm;
+        double azs;
+    private:
+        double limit(double x);
+};
+
 class AstroCalcs{
     public:
         AstroCalcs(double longitude, double latitude);
@@ -46,6 +78,13 @@ class AstroCalcs{
         double getDec();
         void setAltAz(double alt, double az);
         double getRA();
+        double calcRA(double altitude, double azimuth);
+        double calcDec(double altitude, double azimuth);
+        double calcAlt(double right_ascention, double declination);
+        double calcAz(double right_ascention, double declination);
+        Position getPosition(int offset);
+        double _longitude;
+        double _latitude;
 
     private:
         void jdify();
@@ -57,8 +96,6 @@ class AstroCalcs{
         void altaz();
         void precess();
         void radec();
-        double _longitude;
-        double _latitude;
         int _Y;
         int _M;
         int _D;
@@ -67,6 +104,7 @@ class AstroCalcs{
         int _s;
         double _t;
         double _diff;
+        double limit(double x);
 };
 
 #endif
